@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>相談会アプリ LINEの使い方</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<style>
+/* 1枚の説明書。文字より画面。見るのは「3手」と「約束1つ」だけ */
+:root{--bg:#fff;--fg:#15201a;--muted:#4f5f55;--line:#9fc4ab;--accent:#1f7a45;--accent-fg:#0f5a30;--soft:#dcf2e3;--bub:#f1f5f0;--me:#c7e9d1;--mention:#185fa5;--warn:#9a6300;--warn-soft:#fff1c2;--bad:#c62828;--bad-soft:#fdecea;
+--display:"Zen Maru Gothic","Noto Sans JP",system-ui,sans-serif;--body:"Noto Sans JP",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151a16;--fg:#eaf0ea;--muted:#a3b0a6;--line:#3f6b4e;--accent:#6cc08c;--accent-fg:#bfe7cc;--soft:#223b2c;--bub:#273028;--me:#2d5a3c;--mention:#8ab8f0;--warn:#e0b05a;--warn-soft:#3c3017;--bad:#ef8a8a;--bad-soft:#3d1f1f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#151a16;--fg:#eaf0ea;--muted:#a3b0a6;--line:#3f6b4e;--accent:#6cc08c;--accent-fg:#bfe7cc;--soft:#223b2c;--bub:#273028;--me:#2d5a3c;--mention:#8ab8f0;--warn:#e0b05a;--warn-soft:#3c3017;--bad:#ef8a8a;--bad-soft:#3d1f1f;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:520px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:var(--display);font-size:24px;font-weight:700;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-size:18px;font-weight:700;margin:26px 0 8px;display:flex;align-items:center;gap:10px}
+h2 .n{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+p{margin:0}
+.lead{color:var(--muted);margin-top:6px}
+.one{margin-top:14px;border:2px solid var(--accent);border-radius:14px;padding:12px 16px;background:var(--soft)}
+.one b{font-family:var(--display);font-size:19px;color:var(--accent-fg)}
+.ph{border:2px solid var(--line);border-radius:16px;padding:12px;background:var(--bg)}
+.hd{font-size:13px;text-align:center;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.m{display:flex;gap:8px;margin:8px 0;align-items:flex-end}
+.m.me{flex-direction:row-reverse}
+.av{width:30px;height:30px;border-radius:50%;background:var(--soft);color:var(--accent-fg);font-size:13px;display:flex;align-items:center;justify-content:center;flex:none;font-weight:700}
+.b{max-width:82%;background:var(--bub);border-radius:14px;padding:9px 12px;font-size:15px;line-height:1.5}
+.m.me .b{background:var(--me)}
+.who{font-size:12px;color:var(--muted);margin:0 0 2px 38px}
+.men{color:var(--mention);font-weight:700}
+.btns{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.btn{border:1.5px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:8px 10px;font-size:14px;text-align:center}
+.btn.on{background:var(--soft);border-color:var(--accent);color:var(--accent-fg);font-weight:700}
+.qr{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.qr .btn{border-radius:20px;padding:6px 12px}
+.note{font-size:14px;color:var(--muted);margin-top:8px}
+.arrow{text-align:center;color:var(--accent);font-size:22px;line-height:1;margin:2px 0}
+.arrow.cap{font-size:14px;font-weight:700;line-height:1.4;margin:8px 0 4px}
+.pair{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
+.ex{border-radius:12px;padding:10px 12px;border:2px solid var(--line)}
+.ex .lab{font-family:var(--display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ex .mark{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:none;font-size:15px}
+.ex.ng{border-color:var(--bad);background:var(--bad-soft)}
+.ex.ng .mark{background:var(--bad);color:#fff}
+.ex.ng .lab{color:var(--bad)}
+.ex.ok{border-color:var(--accent);background:var(--soft)}
+.ex.ok .mark{background:var(--accent);color:#fff}
+.ex.ok .lab{color:var(--accent-fg)}
+.ex .b{max-width:100%;background:var(--bg)}
+.ex.ng .b{text-decoration:line-through;text-decoration-color:var(--bad);text-decoration-thickness:2px}
+.app{border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--bg);margin-top:8px}
+.app .t{font-size:12px;color:var(--muted);text-align:center;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;font-size:14px}
+.row .id{font-weight:700;color:var(--accent-fg)}
+.row .go{background:var(--accent);color:#fff;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;white-space:nowrap}
+.dec{border:2px solid var(--accent);border-radius:14px;padding:12px 14px;background:var(--bg);margin-top:8px}
+.dec .q{font-family:var(--display);font-weight:700;font-size:17px;text-align:center;color:var(--accent-fg)}
+.dec .arms{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.arm{border-radius:12px;padding:10px;border:1.5px solid var(--line)}
+.arm .yn{display:inline-block;font-size:12px;font-weight:700;border-radius:20px;padding:2px 10px;margin-bottom:6px}
+.arm.yes{background:var(--soft);border-color:var(--accent)}
+.arm.yes .yn{background:var(--accent);color:#fff}
+.arm.no{background:var(--bub)}
+.arm.no .yn{background:var(--muted);color:#fff}
+.arm .ttl{font-family:var(--display);font-weight:700;font-size:16px;margin-bottom:4px}
+.arm ul{margin:0;padding-left:16px;font-size:13.5px;line-height:1.55;color:var(--fg)}
+.arm li{margin:2px 0}
+.three{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
+.card{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.card .ic{width:34px;height:34px;border-radius:10px;background:var(--soft);color:var(--accent-fg);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;font-size:14px}
+.card small{display:block;color:var(--muted);font-size:13px;line-height:1.5}
+.foot{margin-top:26px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>相談会アプリ　LINEの使い方</h1>
+  <p class="lead">やってほしいこと・気づいたことは、グループのトークで「@」して書くだけ。</p>
+
+  <div class="one"><b>覚えるのはこれだけ</b><br>「<span class="men">@相談会アプリ</span>」と書いて、続けて一言。送ればおしまい。</div>
+
+  <h2><span class="n">1</span>@で呼んで、一言書く → すぐ返事が来る</h2>
+  <div class="ph">
+    <div class="hd">相談会メンバー（6）</div>
+    <div class="m me"><div class="b"><span class="men">@相談会アプリ</span> 施設の件、金曜に電話する</div></div>
+    <div class="who">相談会アプリ</div>
+    <div class="m"><div class="av">ア</div><div class="b">登録しました<br><b>施設の件、金曜に電話する</b><br>担当：<span class="men">@小西</span>（書いた人）
+      <div class="btns"><div class="btn">担当・期限を変える</div><div class="btn">提案にする</div><div class="btn">決定として記録</div></div></div></div>
+  </div>
+  <div class="arrow cap">↓ 同時に、アプリの「やること」に入ります</div>
+  <div class="app">
+    <div class="t">アプリ ＞ やること（小西さん）</div>
+    <div class="row" style="border-color:var(--accent)"><span>☐　施設の件、金曜に電話する<br><small style="color:var(--muted)">LINEから・担当：小西・期限なし</small></span><span class="go" style="background:var(--soft);color:var(--accent-fg)">完了</span></div>
+    <div class="row" style="margin-top:6px;opacity:.75"><span>☐　チラシの最終確認<br><small style="color:var(--muted)">担当：小西・10/20まで</small></span><span class="go" style="background:var(--soft);color:var(--accent-fg)">完了</span></div>
+  </div>
+  <p class="note">返事が来たら完了。LINEで登録したものは、アプリの「やること」に並び、完了・担当や期限の変更はそこでできます。ボタンは押さなくて大丈夫（期限を付けたい・人に回したいときだけ）。返事が来なければ登録されていないので、もう一度送る。</p>
+
+  <h2><span class="n">2</span>人に頼む・まだ決めない</h2>
+  <div class="ph">
+    <div class="m me"><div class="b"><span class="men">@相談会アプリ @鈴木</span> 番号札を用意する</div></div>
+    <div class="m"><div class="av">ア</div><div class="b">登録しました　担当：<span class="men">@鈴木</span></div></div>
+    <div class="m me"><div class="b"><span class="men">@相談会アプリ 誰か</span> 会場の机の数を数える</div></div>
+    <div class="m"><div class="av">ア</div><div class="b">登録しました　担当：未定 → 統括が振り分けます</div></div>
+  </div>
+  <p class="note">相手も@すればその人が担当。「誰か」と書けば統括に流れます。</p>
+
+  <h2><span class="n">3</span>どの方の件かは、あとでアプリで押すだけ</h2>
+  <div class="app">
+    <div class="t">アプリ ＞ やること ＞ 施設の件、金曜に電話する</div>
+    <p class="note" style="margin:0 0 6px">どの方の件ですか？</p>
+    <div class="qr"><div class="btn">3番・ご家族・施設探し</div><div class="btn on">1番・ケアマネ・施設探し</div></div>
+  </div>
+  <p class="note">自分が担当している相談が数件だけ並ぶので、押して紐づけます。LINEに番号や名前を書く必要はありません。</p>
+
+  <h2><span class="n">！</span>ひとつだけ約束：相談に来た方の名前・病名はLINEに書かない</h2>
+  <div class="pair">
+    <div class="ex ng"><div class="lab"><span class="mark">✕</span>これはダメ</div>
+      <div class="m me" style="margin:0"><div class="b"><span class="men">@相談会アプリ</span> 山田さん（認知症）の施設の件、金曜に電話する</div></div></div>
+    <div class="ex ok"><div class="lab"><span class="mark">○</span>用件だけでOK</div>
+      <div class="m me" style="margin:0"><div class="b"><span class="men">@相談会アプリ</span> 施設の件、金曜に電話する</div></div></div>
+  </div>
+  <p class="note" style="margin-top:10px">その方の話をしたいときは、LINEではなくアプリのトークで。相談記録の「トークを立てる」を押すと、名前の代わりに番号が付いた部屋が開きます。</p>
+  <div class="app">
+    <div class="t">アプリ ＞ 相談記録</div>
+    <div class="row"><span><span class="id">V2611-003</span>　1番・ケアマネ・施設探し</span><span class="go">トークを立てる</span></div>
+    <div class="arrow">↓</div>
+    <div class="row" style="border-color:var(--accent)"><span><span class="id">V2611-003</span> のトーク（メンバーだけ）</span><span class="go" style="background:var(--soft);color:var(--accent-fg)">ここで相談</span></div>
+  </div>
+
+
+  <h2><span class="n">？</span>LINE と アプリのトーク、どっちに書く？</h2>
+  <div class="dec">
+    <div class="q">相談に来た方、ひとりの話？</div>
+    <div class="arms">
+      <div class="arm yes"><span class="yn">はい</span><div class="ttl">アプリのトーク</div>
+        <ul><li>名前の代わりに<b>番号</b>が付く</li><li>見るのはメンバーだけ（限定もできる）</li><li>相談記録に<b>残る</b></li></ul></div>
+      <div class="arm no"><span class="yn">いいえ</span><div class="ttl">LINE</div>
+        <ul><li>準備・連絡・ちょっとした相談</li><li>やることは「@」で登録 → アプリの「やること」に入る</li><li>個人の話は書かない</li></ul></div>
+    </div>
+  </div>
+  <p class="note">迷ったら「その方の名前が出そうか」で決めます。出そうならアプリのトークへ。</p>
+
+  <h2><span class="n">＋</span>ほかに3つだけ</h2>
+  <div class="three">
+    <div class="card"><div class="ic">今日</div><div>「<span class="men">@相談会アプリ 今日</span>」<small>決まったこと・自分の残り・期限が近いものが返ってきます</small></div></div>
+    <div class="card"><div class="ic">8〜20</div><div>通知は朝8時〜夜8時だけ<small>夜に登録されたものは翌朝まとめて届きます</small></div></div>
+    <div class="card"><div class="ic">✓</div><div>決まったことは「確認しました」を1回<small>アプリの「決まったこと」に出ます。@のない発言はアプリは読みません</small></div></div>
+  </div>
+
+  <p class="foot">相談会アプリ v0.3 ／ 2026年10月 ／ 分からないときは統括（小西）まで</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,657 @@
+<title>複合相談会アプリ デモ（架空データ）</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<style>
+/* Layout: phone-first single column, bottom tab bar, one screen per tab. Flyer-green accent on a cool off-white. */
+:root{
+  --bg:#ffffff; --surface:#ffffff; --surface-2:#f1f5f0; --fg:#15201a; --muted:#4f5f55; --line:#9fc4ab;
+  --accent:#1f7a45; --accent-soft:#dcf2e3; --accent-fg:#0f5a30;
+  --warn:#9a6300; --warn-soft:#fff1c2; --crit:#c62828; --crit-soft:#fde2e2; --lock:#6b5a33; --lock-soft:#f3e8c8;
+  --display:"Zen Maru Gothic","Noto Sans JP",system-ui,sans-serif; --body:"Noto Sans JP",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151a16; --surface:#1e251f; --surface-2:#273028; --fg:#eaf0ea; --muted:#a3b0a6; --line:#3a463c;
+  --accent:#6cc08c; --accent-soft:#223b2c; --accent-fg:#bfe7cc; --warn:#e0b05a; --warn-soft:#3c3017; --crit:#ef8a8a; --crit-soft:#432121; --lock:#cdb98a; --lock-soft:#3a3222; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151a16; --surface:#1e251f; --surface-2:#273028; --fg:#eaf0ea; --muted:#a3b0a6; --line:#3a463c;
+  --accent:#6cc08c; --accent-soft:#223b2c; --accent-fg:#bfe7cc; --warn:#e0b05a; --warn-soft:#3c3017; --crit:#ef8a8a; --crit-soft:#432121; --lock:#cdb98a; --lock-soft:#3a3222; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body.inroom .top,body.inroom .guide{display:none}
+.roomhead select{width:auto;padding:4px 6px;font-size:12px}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;margin:0}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px;padding-block:8px 96px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:20px;font-weight:700}
+h2{font-size:17px;font-weight:700;margin:20px 0 10px}
+h3{font-size:15px;font-weight:700}
+p{margin:0}
+.top{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:8px 0 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.spacer{flex:1}
+.demo-tag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-fg);background:var(--accent-soft);padding:2px 8px;border-radius:4px;font-weight:700}
+.viewer{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+select,input[type=text],textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+.viewer select{width:auto;padding:4px 8px;font-size:13px}
+textarea{min-height:64px;resize:vertical}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+.field{margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer;color:var(--fg)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-fg);font-weight:500}
+button{font:inherit;cursor:pointer}
+.btn{border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:9px 14px;font-size:14px;font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn:focus-visible,.chip:focus-visible,.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
+.top{border-bottom:2px solid var(--accent)}
+.tabs{border-top:2px solid var(--accent)}
+.kento,.owner{border-width:1.5px}
+.pill{border:1px solid transparent}
+.s-相談中{border-color:var(--line)} .s-提案中{border-color:var(--warn)} .s-受注,.s-進行中{border-color:var(--accent)}
+.k-未着手{border:1px solid var(--line)} .k-検討中{border:1px solid var(--warn)} .k-決定{border:1px solid var(--accent)}
+.p-高{border:1px solid var(--crit)} .p-中{border:1px solid var(--warn)} .p-低{border:1px solid var(--line)}
+.decision{border-left:4px solid var(--accent)}
+.over{border-left-width:4px}
+.hero{border:1.5px solid var(--accent)}
+.prog{background:#e4ebe6}
+.talk{border-bottom-color:var(--line)}
+.bub{border-color:var(--line)}
+.msg.me .bub{border:1px solid var(--accent)}
+.lock,.lockbox{border:1px solid var(--lock)}
+.list{display:flex;flex-direction:column;gap:8px}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.kpi{background:var(--surface-2);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi .n{font-size:24px;font-weight:700;font-family:var(--display);font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .l{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;white-space:nowrap}
+.s-相談中{background:var(--surface-2);color:var(--muted)} .s-提案中{background:var(--warn-soft);color:var(--warn)} .s-受注{background:var(--accent-soft);color:var(--accent-fg)} .s-進行中{background:var(--accent-soft);color:var(--accent-fg)} .s-完了{background:var(--accent);color:#fff} .s-見送り{background:var(--surface-2);color:var(--muted);text-decoration:line-through}
+.id{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.meta{font-size:12px;color:var(--muted)}
+.over{border-left:3px solid var(--crit);padding-left:10px}
+.lock{background:var(--lock-soft);color:var(--lock);font-size:12px;padding:6px 10px;border-radius:8px;display:flex;gap:6px;align-items:center}
+.post{padding:8px 0;border-top:1px dashed var(--line);font-size:14px}
+.post:first-child{border-top:0}
+.post .who{font-weight:500;font-size:13px}
+.lab{font-size:11px;padding:1px 7px;border-radius:4px;background:var(--surface-2);color:var(--muted);margin-left:4px}
+.lab.q{background:var(--warn-soft);color:var(--warn)}
+.decision{background:var(--accent-soft);border-radius:8px;padding:8px 10px;font-size:14px}
+.decision b{color:var(--accent-fg)}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:2px solid var(--accent);display:flex;padding:6px 8px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));z-index:10}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);font-size:11px;padding:6px 2px;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab b{font-size:16px;font-family:var(--display)}
+.tab.on{color:var(--accent-fg);background:var(--accent-soft)}
+.screen[hidden]{display:none}
+.guide{background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:13px}
+.guide summary{cursor:pointer;font-weight:500}
+.guide ol{margin:8px 0 0 18px;padding:0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.show{opacity:1}
+.queue{display:flex;gap:6px;flex-wrap:wrap}
+.num{background:var(--surface-2);border-radius:8px;padding:6px 10px;font-family:var(--display);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.num.now{background:var(--accent);color:#fff}
+.pre{white-space:pre-wrap;font-size:13px;background:var(--surface-2);border-radius:8px;padding:10px;line-height:1.55}
+.qr{border:2px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.sr{position:absolute;left:-9999px}
+/* トーク一覧 */
+.talks{display:flex;flex-direction:column;margin-top:10px;border-top:1.5px solid var(--line)}
+.talk{display:flex;gap:10px;align-items:flex-start;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer;background:transparent;border-left:0;border-right:0;border-top:0;text-align:left;width:100%;color:var(--fg);font:inherit}
+.talk .av{width:40px;height:40px;border-radius:50%;background:var(--accent-soft);color:var(--accent-fg);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;flex:none}
+.talk .av.lk{background:var(--lock-soft);color:var(--lock)}
+.talk .t{font-weight:500;font-size:14px;line-height:1.4;display:flex;gap:6px;align-items:center;min-width:0}
+.talk .t span.tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.talk .last{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.talk .when{font-size:11px;color:var(--muted);flex:none;padding-top:2px}
+.badge{background:var(--accent);color:#fff;font-size:11px;border-radius:999px;padding:0 6px;min-width:18px;text-align:center;font-weight:500}
+/* トーク画面 */
+.roomhead{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:2px solid var(--accent)}
+.roomtitle{font-family:var(--display);font-weight:700;font-size:15px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.roommenu{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.roommenu .btn{text-align:left;border:0}
+.msgs{display:flex;flex-direction:column;gap:10px;padding:14px 0 150px}
+.msg{display:flex;flex-direction:column;max-width:84%;gap:2px}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.msg .who{font-size:11px;color:var(--muted);padding:0 4px}
+.bub{background:var(--surface);border:1px solid var(--line);border-radius:16px;border-top-left-radius:4px;padding:8px 12px;font-size:14px;line-height:1.5;cursor:pointer}
+.msg.me .bub{background:var(--accent-soft);border-color:transparent;border-radius:16px;border-top-right-radius:4px;color:var(--fg)}
+.bub .lab{margin:0 0 4px;display:inline-block}
+.msg .tm{font-size:10px;color:var(--muted);padding:0 4px}
+.msg.sys{align-self:center;max-width:100%;align-items:center}
+.msg.sys .bub{background:var(--accent-soft);border:0;border-radius:10px;font-size:12px;color:var(--accent-fg);cursor:default}
+.msg.sys .bub b{margin-right:4px}
+.msgact{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.composer{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:2px solid var(--accent);padding:8px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:11;display:flex;flex-direction:column;gap:6px}
+.composer .chips{gap:4px}
+.composer .chip{font-size:12px;padding:3px 9px}
+.composer .chip.nr.on{background:var(--lock-soft);border-color:var(--lock);color:var(--lock)}
+/* 道のり（長期・中期・短期） */
+.road{margin-top:12px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.rr{display:grid;grid-template-columns:44px 1fr;gap:8px;align-items:center}
+.rr .lb{font-size:12px;color:var(--muted);font-weight:700}
+.rr .lb small{display:block;font-weight:400;font-size:10px}
+.track{position:relative;display:flex;gap:3px;height:26px}
+.seg{position:relative;flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;cursor:pointer}
+.seg .fill{position:absolute;left:0;top:0;bottom:0;background:var(--accent);opacity:.85}
+.seg .fill.warn{background:var(--warn)}
+.seg .cap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--fg);white-space:nowrap;mix-blend-mode:multiply}
+.seg.done .cap{color:#fff;mix-blend-mode:normal}
+.seg.now{border:2px solid var(--crit)}
+.pin{position:absolute;top:-8px;transform:translateX(-50%);font-size:10px;color:var(--crit);font-weight:700;white-space:nowrap}
+.pin:after{content:"";display:block;width:2px;height:34px;background:var(--crit);margin:0 auto}
+.road .meta{font-size:11px}
+/* 進行ダッシュボード */
+.bigbtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.bigbtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 14px;min-height:76px;background:var(--surface);border:2px solid var(--accent);border-radius:12px;color:var(--fg);text-align:left}
+.bigbtn .bn{font-family:var(--display);font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:var(--accent-fg)}
+.bigbtn .bl{font-size:13px;color:var(--muted)}
+.bigbtn.warn{border-color:var(--crit)} .bigbtn.warn .bn{color:var(--crit)}
+.bigbtn.warn.zero{border-color:var(--accent)} .bigbtn.warn.zero .bn{color:var(--accent-fg)}
+.btn,.chip,.tab,.bigbtn{min-height:44px}
+.btn.sm{min-height:36px}
+.mine{display:flex;gap:10px;align-items:center;padding:12px 14px;background:var(--surface);border:2px solid var(--line);border-radius:12px;font-size:15px}
+.mine.late{border-color:var(--crit)}
+.mine .cb{width:26px;height:26px;border:2px solid var(--accent);border-radius:7px;flex:none;cursor:pointer}
+.hero{background:var(--accent-soft);border-radius:14px;padding:14px 16px;margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.count{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.count .big{font-family:var(--display);font-size:44px;font-weight:700;line-height:1;color:var(--accent-fg);font-variant-numeric:tabular-nums}
+.count .unit{font-family:var(--display);font-size:18px;font-weight:700;color:var(--accent-fg);margin-right:8px}
+.prog{height:8px;background:#e4ebe6;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.prog .bar{height:100%;background:var(--accent);border-radius:999px;transition:width .3s}
+.hero.after{background:var(--surface-2)}
+.hero.after .big,.hero.after .unit{color:var(--fg)}
+h2.row{gap:8px}
+h2.row .btn{font-weight:400}
+.kento{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px}
+.kento .pr{flex:none;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:13px}
+.p-高{background:var(--crit-soft);color:var(--crit)} .p-中{background:var(--warn-soft);color:var(--warn)} .p-低{background:var(--surface-2);color:var(--muted)}
+.k-未着手{background:var(--surface-2);color:var(--muted)} .k-検討中{background:var(--warn-soft);color:var(--warn)} .k-決定{background:var(--accent-soft);color:var(--accent-fg)} .k-済{background:var(--accent);color:#fff}
+.kento .pill{border:0;cursor:pointer}
+.owner{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px}
+.owner .av{width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent-fg);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;flex:none}
+.owner .prog{flex:1;height:8px}
+.owner .n{font-size:12px;color:var(--muted);min-width:46px;text-align:right;font-variant-numeric:tabular-nums}
+.task{display:flex;gap:10px;align-items:flex-start;padding:9px 4px;border-bottom:1px solid var(--line)}
+.task .cb{border-color:var(--accent)}
+.task .cb{width:22px;height:22px;border:1.5px solid var(--line);border-radius:6px;flex:none;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.task.done .cb{background:var(--accent);border-color:var(--accent)}
+.task.done .tt{text-decoration:line-through;color:var(--muted)}
+.subhead{display:flex;align-items:center;gap:10px;margin-top:12px}
+.sec{font-size:12px;letter-spacing:.06em;color:var(--accent-fg);margin:14px 0 6px;font-weight:700;border-left:4px solid var(--accent);padding-left:8px}
+.goalrow{display:grid;grid-template-columns:1fr 56px 56px 70px;gap:6px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);font-size:14px}
+.goalrow.h{font-size:11px;color:var(--muted);border-bottom:1px solid var(--line)}
+.goalrow .v{text-align:right;font-variant-numeric:tabular-nums}
+.goalrow .ach{font-size:12px;text-align:right}
+.ok{color:var(--accent-fg)} .ng{color:var(--crit)}
+.lockbox{background:var(--lock-soft);color:var(--lock);border:1.5px solid var(--lock);border-radius:12px;padding:14px;font-size:13px;line-height:1.6;margin-top:14px}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="row">
+      <h1>複合相談会アプリ</h1>
+      <span class="demo-tag">デモ・架空データ</span>
+      <span class="spacer"></span>
+    </div>
+    <div class="row">
+      <div class="viewer">いま見ている人
+        <select id="viewer" aria-label="ログイン中のメンバーを切り替える"></select>
+      </div>
+      <span class="spacer"></span>
+      <span class="meta" id="role"></span>
+    </div>
+  </div>
+
+  <details class="guide" style="margin-top:10px">
+    <summary>実演の流れ（3分）</summary>
+    <ol>
+      <li>進行：開催日までの残り日数、やることの進み具合、優先高の未決。「全部見る」で検討事項17件、「一覧」で担当別のやること、「詳細」でゴールと実績</li>
+      <li>提案：「みんなの提案」を開く → 意見を書く → 右上⋯「決定にする」→ 進行画面で「タスクにする」→ 担当付きのやることに変わる</li>
+      <li>右上「開催後の見え方」を押すと、ゴールに対する実績が入った状態になる</li>
+      <li>受付：紙の人を1人受け付ける → 管理IDと番号札が自動で付く</li>
+      <li>相談：その番号で相談記録を書き、「案件にする」を押す</li>
+      <li>案件：並んだ案件の状態をタップで進める。期限超過は赤</li>
+      <li>トーク：LINE風の一覧からトークを開き、吹き出しで会話。「いま見ている人」を鈴木に切り替える → 限定トークは件名だけ見えて本文は見えない。吹き出しをタップ→「決定として記録」で全員公開の決定ログに載る</li>
+      <li>ホームに戻ると「今日の動き」に今の操作が入っている → コピーしてLINEへ</li>
+    </ol>
+  </details>
+
+  <!-- 進行ダッシュボード -->
+  <section class="screen" id="sc-home">
+    <div class="hero" id="heroCard">
+      <div class="row"><span class="meta">無料複合相談会 ＠みそら薬局 臼井駅前店</span><span class="spacer"></span><button class="btn sm" id="phaseBtn">開催後の見え方</button></div>
+      <div class="count"><span class="big" id="daysLeft">43</span><span class="unit">日</span><span class="meta" id="eventDate">開催日 11/15（日）10:00〜15:00</span></div>
+      <div class="prog"><div class="bar" id="taskBar"></div></div>
+      <div class="row meta" id="progText"></div>
+    </div>
+
+    <div class="road" id="road"></div>
+    <div class="bigbtns">
+      <button class="bigbtn" data-go="decisions"><span class="bn" id="decCount">0</span><span class="bl">決まったこと</span></button>
+      <button class="bigbtn warn" data-go="kento"><span class="bn" id="kentoLeft">0</span><span class="bl">決めること（残り）</span></button>
+      <button class="bigbtn" data-go="tasks"><span class="bn" id="taskLeft">0</span><span class="bl">やること（残り）</span></button>
+      <button class="bigbtn" data-go="goal"><span class="bn" id="goalMini">－</span><span class="bl">ゴール（仮）</span></button>
+    </div>
+
+    <button class="mine" id="memoLine" style="width:100%;margin-top:10px;border-color:var(--warn);cursor:pointer;font:inherit"></button>
+    <h2 class="row">あなたの次の1つ</h2>
+    <div class="list" id="mineNext"></div>
+
+    <h2 class="row">決まったこと（新しい順）<span class="spacer"></span><button class="btn sm" data-go="decisions">全部 ›</button></h2>
+    <div class="list" id="decTop"></div>
+
+    <h2 class="row">みんなの提案<span class="spacer"></span><button class="btn sm primary" id="goProposal">＋ 提案する</button></h2>
+    <div class="list" id="proposals"></div>
+
+    <details class="guide" style="margin-top:16px"><summary>今日の動き（LINEに貼る文面）</summary><div class="pre" id="daily" style="margin-top:8px"></div><div class="row" style="margin-top:8px"><button class="btn primary" id="copyDaily">文面をコピー</button></div></details>
+    <div id="goalKpis" hidden></div><div id="kentoTop" hidden></div><div id="byOwner" hidden></div>
+  </section>
+
+  <!-- 決まったこと一覧 -->
+  <section class="screen sub" id="sc-decisions" hidden>
+    <div class="subhead"><button class="btn sm" data-back="home">‹ 進行</button><h2 style="margin:0">決まったこと</h2></div>
+    <p class="meta">提案や限定トークで決まったことは、ここに全員公開で並ぶ。新しい順。限定トークの経緯は参加者だけが見られるが、決定そのものは全員に見える</p>
+    <div class="list" id="decAll" style="margin-top:8px"></div>
+    <h2>まだ決まっていないこと（優先高）</h2>
+    <div class="list" id="decOpen"></div>
+  </section>
+
+  <!-- 決めること一覧 -->
+  <section class="screen sub" id="sc-kento" hidden>
+    <div class="subhead"><button class="btn sm" data-back="home">‹ 進行</button><h2 style="margin:0">決めること（検討事項）</h2></div>
+    <p class="meta">状態をタップで 未着手→検討中→決定→済。決定したら「タスクにする」で担当付きのやることに変わる</p>
+    <div class="chips" id="kentoFilter" style="margin:8px 0"><button class="chip on" data-v="open">未決だけ</button><button class="chip" data-v="all">すべて</button></div>
+    <div id="kentoList"></div>
+  </section>
+
+  <!-- やること一覧 -->
+  <section class="screen sub" id="sc-tasks" hidden>
+    <div class="subhead"><button class="btn sm" data-back="home">‹ 進行</button><h2 style="margin:0">やること</h2></div>
+    <div class="card" style="margin:8px 0">
+      <div class="row"><input type="text" id="newTask" placeholder="やることを一言で" style="flex:1"><select id="newTaskOwner" style="width:auto"></select><button class="btn primary sm" id="addTask">追加</button></div>
+    </div>
+    <div class="chips" id="taskFilter" style="margin:8px 0"><button class="chip on" data-v="open">残り</button><button class="chip" data-v="mine">自分</button><button class="chip" data-v="memo">未整理のメモ</button><button class="chip" data-v="all">すべて</button></div>
+    <div id="taskList"></div>
+  </section>
+
+  <!-- ゴール -->
+  <section class="screen sub" id="sc-goal" hidden>
+    <div class="subhead"><button class="btn sm" data-back="home">‹ 進行</button><h2 style="margin:0">ゴールと実績</h2></div>
+    <p class="meta">目標は仮。メンバーで話し合って決める。実績は当日と事後の入力から自動で入る</p>
+    <div id="goalTable"></div>
+    <h2>期限が過ぎている案件</h2>
+    <div class="list" id="overdue"></div>
+  </section>
+
+  <!-- 受付 -->
+  <section class="screen" id="sc-uke" hidden>
+    <h2>受付</h2>
+    <div class="card">
+      <div class="field"><label>受付の方法</label><div class="chips" id="howChips"><button class="chip on" data-v="紙">紙の受付票</button><button class="chip" data-v="QR">QR事前登録（仮番号あり）</button></div></div>
+      <div class="field" id="qrField" hidden><label>仮番号</label><input type="text" id="qrNo" placeholder="Q-012"></div>
+      <div class="field"><label>どなたのご相談</label><div class="chips" id="whoChips"></div></div>
+      <div class="field"><label>相談したいこと（複数可）</label><div class="chips" id="fieldChips"></div></div>
+      <div class="row"><button class="btn primary" id="addVisitor">受け付ける</button><span class="meta">氏名はここに入れない。紙は紙のまま保管</span></div>
+    </div>
+    <h2>待ち状況</h2>
+    <div class="card"><div class="queue" id="queue"></div><div class="row" style="margin-top:10px"><button class="btn sm" id="callNext">次の番号を呼ぶ</button><span class="meta" id="nowCalling"></span></div></div>
+    <h2>今日の来訪者</h2>
+    <div class="list" id="visitors"></div>
+    <div class="qr">
+      <h3>QR事前登録ページ（来訪者が見る画面の見本）</h3>
+      <p class="meta" style="margin:4px 0 8px">ログイン不要。送信すると仮番号だけが出る。メールアドレスは集めない</p>
+      <div class="field"><label>どなたのご相談</label><select><option>ご本人</option><option>ご家族</option><option>ケアマネジャー</option></select></div>
+      <div class="field"><label>ひとことで（任意）</label><input type="text" placeholder="親の施設探しと、実家の扱いについて"></div>
+      <div class="row"><input type="checkbox" id="agree"><label for="agree" style="margin:0">「ご相談内容の取り扱い」に同意します</label></div>
+      <div class="row" style="margin-top:8px"><button class="btn" id="qrSubmit">送信</button><span class="meta" id="qrResult"></span></div>
+    </div>
+  </section>
+
+  <!-- 相談記録 -->
+  <section class="screen" id="sc-sodan" hidden>
+    <h2>相談記録</h2>
+    <div class="card">
+      <div class="field"><label>管理ID（番号で選ぶ）</label><select id="recVisitor"></select></div>
+      <div class="field"><label>分野（複数可）</label><div class="chips" id="recFields"></div></div>
+      <div class="field"><label>要約（名前・病名・町名は書かない）</label><textarea id="recText" placeholder="ご家族（子）から。親の物忘れが気になり、今後の住まいと自宅（不動産あり）の扱いを相談したい。"></textarea></div>
+      <div class="field"><label>連携した専門職</label><div class="chips" id="recMembers"></div></div>
+      <div class="field"><label>次の一手</label><input type="text" id="recNext" placeholder="施設紹介が2週間以内に電話"></div>
+      <div class="row"><input type="checkbox" id="recCase" checked><label for="recCase" style="margin:0">案件にする（後日の対応あり）</label></div>
+      <div class="row" style="margin-top:10px"><button class="btn primary" id="addRec">記録する</button></div>
+    </div>
+    <h2>記録一覧</h2>
+    <div class="list" id="records"></div>
+  </section>
+
+  <!-- 案件 -->
+  <section class="screen" id="sc-anken" hidden>
+    <h2>案件</h2>
+    <p class="meta" style="margin-bottom:8px">状態をタップすると次へ進む（相談中→提案中→受注→進行中→完了）。見送りは「見送る」で。削除はない</p>
+    <div class="chips" id="caseFilter" style="margin-bottom:10px"><button class="chip on" data-v="all">すべて</button><button class="chip" data-v="mine">自分の担当</button><button class="chip" data-v="over">期限超過</button></div>
+    <div class="list" id="cases"></div>
+  </section>
+
+  <!-- スレッド：トーク一覧 -->
+  <section class="screen" id="sc-thread" hidden>
+    <div class="row" style="margin-top:14px"><h2 style="margin:0">トーク</h2><span class="spacer"></span><button class="btn sm primary" id="newThreadBtn">＋ 新しいトーク</button></div>
+    <div class="card" id="newThread" hidden style="margin-top:10px">
+      <div class="field"><label>件名</label><input type="text" id="thTitle" placeholder="V2611-003 の自宅、売却と賃貸どちらが先か"></div>
+      <div class="field"><label>見え方</label><div class="chips" id="thKind"><button class="chip on" data-v="公開">公開（既定）</button><button class="chip" data-v="提案">提案（みんなで意見を出す）</button><button class="chip" data-v="限定">限定（本文は参加者だけ）</button></div></div>
+      <div class="field" id="thPartField" hidden><label>参加者（件名と参加者は全員に見える）</label><div class="chips" id="thParts"></div></div>
+      <div class="row"><button class="btn" id="cancelThread">やめる</button><span class="spacer"></span><button class="btn primary" id="addThread">作る</button></div>
+    </div>
+    <div class="talks" id="threads"></div>
+    <h2>決定ログ（限定トークの決定もここに全員公開）</h2>
+    <div class="list" id="decisions"></div>
+  </section>
+
+  <!-- スレッド：トーク画面 -->
+  <section class="screen room" id="sc-room" hidden>
+    <div class="roomhead">
+      <button class="btn sm" id="backRoom">‹ 戻る</button>
+      <div style="flex:1;min-width:0"><div class="roomtitle" id="roomTitle"></div><div class="meta" id="roomMeta"></div></div>
+      <select id="viewer2" aria-label="見ている人を切り替える"></select>
+      <button class="btn sm" id="roomMenuBtn">⋯</button>
+    </div>
+    <div class="roommenu" id="roomMenu" hidden></div>
+    <div class="msgs" id="msgs"></div>
+    <div class="composer" id="composer">
+      <div class="chips" id="thLabel"><button class="chip on" data-v="ちょっと聞きたい">ちょっと聞きたい</button><button class="chip" data-v="報告だけ">報告だけ</button><button class="chip" data-v="判断してほしい">判断してほしい</button><button class="chip" id="thNoReply" data-v="返信不要">返信不要</button></div>
+      <div class="row" style="flex-wrap:nowrap"><input type="text" id="thBody" placeholder="メッセージを入力" style="flex:1"><button class="btn primary" id="sendMsg">送信</button></div>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs" aria-label="画面の切り替え">
+  <button class="tab on" data-s="home"><b>進</b>進行</button>
+  <button class="tab" data-s="uke"><b>受</b>受付</button>
+  <button class="tab" data-s="sodan"><b>相</b>相談</button>
+  <button class="tab" data-s="anken"><b>案</b>案件</button>
+  <button class="tab" data-s="thread"><b>話</b>トーク</button>
+</nav>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const MEMBERS=[{id:"konishi",n:"小西",role:"統括",f:"施設紹介"},{id:"kuratsugi",n:"倉次",role:"専門職",f:"薬局・会場提供"},{id:"arai",n:"新井",role:"専門職",f:"司法書士"},{id:"hakku",n:"白句",role:"専門職",f:"行政書士"},{id:"suzuki",n:"鈴木",role:"専門職",f:"KURUMI"},{id:"uke",n:"受付係",role:"受付担当",f:"受付"}];
+const WHO=["ご本人","ご家族","ケアマネジャー","地域包括","地域の方"];
+const FIELDS=["介護","お薬・健康","施設・住まい","遺言・相続","後見・手続き","死後事務","遺品整理","終活全般"];
+const STATUS=["相談中","提案中","受注","進行中","完了"];
+const today=new Date("2026-11-15T10:00:00");
+let seq=5, qrSeq=12, calling=0;
+let visitors=[
+ {id:"V2611-001",how:"QR",who:"ケアマネジャー",f:["施設・住まい","お薬・健康"],t:"10:02",no:1},
+ {id:"V2611-002",how:"紙",who:"ご家族",f:["介護","遺言・相続"],t:"10:05",no:2},
+ {id:"V2611-003",how:"紙",who:"ご本人",f:["終活全般","遺品整理"],t:"10:11",no:3},
+ {id:"V2611-004",how:"QR",who:"ご家族",f:["施設・住まい","後見・手続き"],t:"10:20",no:4},
+ {id:"V2611-005",how:"紙",who:"地域包括",f:["介護"],t:"10:26",no:5}];
+let records=[
+ {v:"V2611-001",f:["施設・住まい","お薬・健康"],text:"ケアマネから。担当利用者の退院後の住まい。服薬が多く、施設側で管理できる所を希望。",by:"konishi",with:["kuratsugi"],next:"施設紹介が候補3件を来週提示",caseId:1},
+ {v:"V2611-002",f:["介護","遺言・相続"],text:"ご家族（子）から。親の物忘れが気になり、今後の住まいと自宅（不動産あり）の扱いを相談したい。",by:"arai",with:["konishi"],next:"司法書士が相続登記の要否を確認、2週間以内に電話",caseId:2},
+ {v:"V2611-003",f:["終活全般","遺品整理"],text:"ご本人。一人暮らし。物の整理と、亡くなった後の手続きを誰に頼めるか。",by:"hakku",with:["suzuki"],next:"行政書士が死後事務の概要を郵送",caseId:3}];
+let cases=[
+ {id:1,v:"V2611-001",f:"施設・住まい",owner:"konishi",st:"提案中",due:"2026-11-22",note:"候補3件を提示予定"},
+ {id:2,v:"V2611-002",f:"遺言・相続",owner:"arai",st:"相談中",due:"2026-11-12",note:"相続登記の要否"},
+ {id:3,v:"V2611-003",f:"死後事務",owner:"hakku",st:"受注",due:"2026-11-29",note:"死後事務委任の文案"},
+ {id:4,v:"V2610-004",f:"遺品整理",owner:"suzuki",st:"完了",due:"2026-11-01",note:"10月の町内会開催分。作業完了・入金済み"}];
+let threads=[
+ {id:1,title:"当日の受付、タブレットは1台で足りるか",kind:"公開",by:"konishi",parts:[],posts:[{by:"konishi",lab:"判断してほしい",text:"受付用のタブレットは1台にして、紙を基本にしたい",nr:false},{by:"kuratsugi",lab:"報告だけ",text:"薬局のiPadを1台出せます",nr:true}],link:"",t:"11/10"},
+ {id:2,title:"V2611-002 の自宅、相続登記の前に不動産の相談を入れるか",kind:"限定",by:"arai",parts:["arai","konishi"],posts:[{by:"arai",lab:"ちょっと聞きたい",text:"登記の前に売却の見込みを聞いておきたい。小西さん、不動産の人を紹介できますか",nr:false},{by:"konishi",lab:"報告だけ",text:"できます。来週の電話に同席します",nr:true}],link:"V2611-002",t:"11/15"},
+ {id:3,title:"V2611-003 の遺品整理、見積の前に家族の同意が要るか",kind:"限定",by:"hakku",parts:["hakku","suzuki"],posts:[{by:"hakku",lab:"ちょっと聞きたい",text:"ご本人の希望だが、遠方の子の了解を先に取るべきか",nr:false}],link:"V2611-003",t:"11/15"}];
+let decisions=[
+ {text:"受付タブレットは1台。紙の受付票を基本にする",by:"konishi",t:"11/11",th:1,ack:["konishi","kuratsugi","hakku"]},
+ {text:"V2611-002 は相続登記の前に不動産の相談を1回入れる",by:"arai",t:"11/15",th:2,ack:["arai","konishi"]}];
+let log=[];
+let viewer="konishi";
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const name=id=>id?((MEMBERS.find(m=>m.id===id)||{}).n||id):"担当なし";
+const me=()=>MEMBERS.find(m=>m.id===viewer);
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("show"),1800)}
+function chips(el,arr,multi,on){el.innerHTML=arr.map(a=>`<button class="chip${(on||[]).includes(a)?" on":""}" data-v="${a}">${a}</button>`).join("");el.onclick=e=>{const b=e.target.closest(".chip");if(!b)return;if(multi)b.classList.toggle("on");else{[...el.children].forEach(c=>c.classList.remove("on"));b.classList.add("on")}el.dispatchEvent(new Event("change"))}}
+const picked=el=>$$("#"+el.id+" .chip.on").map(b=>b.dataset.v);
+function daysLate(d){return Math.floor((today-new Date(d+"T00:00:00"))/864e5)}
+
+/* viewer */
+$("#viewer").innerHTML=MEMBERS.map(m=>`<option value="${m.id}">${m.n}（${m.f}）</option>`).join("");
+$("#viewer").onchange=e=>{viewer=e.target.value;$("#viewer2").value=viewer;renderAll()};
+$("#viewer2").innerHTML=MEMBERS.map(m=>`<option value="${m.id}">${m.n}</option>`).join("");
+$("#viewer2").onchange=e=>{viewer=e.target.value;$("#viewer").value=viewer;renderAll()};
+
+/* tabs */
+$$(".tab").forEach(t=>t.onclick=()=>{$$(".tab").forEach(x=>x.classList.toggle("on",x===t));$$(".screen").forEach(s=>s.hidden=s.id!=="sc-"+t.dataset.s);window.scrollTo({top:0})});
+
+/* 進行：検討事項・やること・ゴール */
+let phase="before"; // before=開催前（10/3時点）, after=開催後
+const KENTO=[
+ {id:1,g:"A 開催の骨格（今週中）",p:"高",t:"開催日・時間を確定する（11/15 10〜15時で仮置き）",o:"konishi",due:"10/06",st:"検討中",th:4},
+ {id:2,g:"A 開催の骨格（今週中）",p:"高",t:"会場：薬局に使えるスペース・同時に立てられるブース数・机・椅子・電源・休業日との兼ね合いを確認する（薬局は場所の提供のみ）",o:"konishi",due:"10/08",st:"未着手"},
+ {id:3,g:"A 開催の骨格（今週中）",p:"高",t:"相談会のゴール（何を測るか）をみんなで決める",o:"konishi",due:"10/10",st:"検討中",th:5},
+ {id:4,g:"A 開催の骨格（今週中）",p:"高",t:"相談の流れ：受付→振り分け→ブース→次の一手。1人あたりの時間（目安20分）",o:"konishi",due:"10/10",st:"未着手"},
+ {id:5,g:"A 開催の骨格（今週中）",p:"高",t:"受付方法と個人情報の扱い（受付票・同意文）を確定、士業に一読してもらう",o:"arai",due:"10/10",st:"検討中"},
+ {id:6,g:"B 告知（10月中旬まで）",p:"高",t:"チラシ最終版：日時・連絡先を入れる。印刷部数と費用の負担",o:"konishi",due:"10/14",st:"未着手"},
+ {id:7,g:"B 告知（10月中旬まで）",p:"高",t:"チラシの配布先と担当：包括・居宅・薬局店頭・町内会・医療機関",o:"suzuki",due:"10/14",st:"未着手"},
+ {id:8,g:"B 告知（10月中旬まで）",p:"高",t:"挨拶回り：地域包括、居宅介護支援事業所、民生委員、町内会長。誰がどこへ",o:"konishi",due:"10/17",st:"未着手"},
+ {id:9,g:"B 告知（10月中旬まで）",p:"中",t:"SNS・Web：媒体（薬局LINE公式／Instagram／各社HP／市の広報）と投稿担当・回数",o:"suzuki",due:"10/17",st:"未着手",th:6},
+ {id:10,g:"B 告知（10月中旬まで）",p:"中",t:"市・社会福祉協議会に後援や広報掲載を頼むか",o:"hakku",due:"10/17",st:"未着手"},
+ {id:11,g:"C 当日の運営（11月上旬まで）",p:"中",t:"当日の役割分担：受付・案内・ブース・記録・写真",o:"konishi",due:"11/05",st:"未着手"},
+ {id:12,g:"C 当日の運営（11月上旬まで）",p:"中",t:"持ち物：受付票・番号札・名札・筆記具・タブレット・案内掲示・ブース仕切り",o:"uke",due:"11/08",st:"未着手"},
+ {id:13,g:"C 当日の運営（11月上旬まで）",p:"中",t:"相談記録の書き方（名前・病名を書かない）を共有し、事前に1回練習する",o:"konishi",due:"11/08",st:"未着手"},
+ {id:14,g:"C 当日の運営（11月上旬まで）",p:"低",t:"混雑時・体調不良時の対応、待ち時間の案内",o:"suzuki",due:"11/10",st:"未着手"},
+ {id:15,g:"C 当日の運営（11月上旬まで）",p:"低",t:"費用：印刷・備品・飲み物。各社の按分",o:"konishi",due:"11/10",st:"未着手"},
+ {id:16,g:"D 事後",p:"中",t:"フォローのルール：誰がいつまでに連絡するか、分野をまたぐ案件の引継ぎ",o:"arai",due:"11/13",st:"未着手"},
+ {id:17,g:"D 事後",p:"低",t:"振り返りの日程と、次回（町内会開催）の目安",o:"konishi",due:"11/22",st:"未着手"}];
+let tasks=[
+ {id:1,t:"薬局に会場の使用可否と使えるスペースを確認",o:"konishi",due:"10/08",done:0,from:2},
+ {id:2,t:"チラシのデザイン案を1案に絞る",o:"konishi",due:"10/06",done:1},
+ {id:3,t:"受付票・同意文v0.1を士業2名に送る",o:"konishi",due:"10/06",done:1},
+ {id:4,t:"同意文を読んで直す点を返す",o:"arai",due:"10/10",done:0,from:5},
+ {id:5,t:"同意文を読んで直す点を返す",o:"hakku",due:"10/10",done:0,from:5},
+ {id:6,t:"包括・居宅の配布先リストを作る",o:"suzuki",due:"10/12",done:0,from:7},
+ {id:7,t:"薬局LINE公式で告知できるか確認",o:"suzuki",due:"10/12",done:0,from:9},
+ {id:8,t:"番号札（1〜40）と案内掲示を用意",o:"uke",due:"11/08",done:0,from:12},
+ {id:9,t:"駐車場が少ないので近隣のコインパーキングを案内に載せる",o:null,due:"",done:0,memo:1,src:"LINE 10/02 新井"},
+ {id:10,t:"包括の〇〇さんにチラシを渡すとき一言添える件",o:null,due:"",done:0,memo:1,src:"LINE 10/03 鈴木"}];
+const GOALS=[
+ {k:"来訪者数",g:20,a:()=>visitors.length,unit:"名"},
+ {k:"相談件数",g:15,a:()=>records.length,unit:"件"},
+ {k:"連携相談数（2分野以上）",g:5,a:()=>records.filter(r=>r.with.length).length,unit:"件"},
+ {k:"案件化数",g:8,a:()=>cases.length,unit:"件"},
+ {k:"受注数",g:3,a:()=>cases.filter(x=>["受注","進行中","完了"].includes(x.st)).length,unit:"件"},
+ {k:"完了（対価を受領）",g:2,a:()=>cases.filter(x=>x.st==="完了").length,unit:"件",note:"12月末まで"}];
+threads.push(
+ {id:4,title:"開催日は11/15（日）でよいか。時間は10〜15時？",kind:"提案",by:"konishi",parts:[],posts:[{by:"konishi",lab:"判断してほしい",text:"11/15（日）10〜15時で仮置き。薬局の都合が合えば確定したい",nr:false,tm:"9:10"},{by:"kuratsugi",lab:"報告だけ",text:"日曜は休業日なので、店内は終日使えます",nr:true,tm:"9:40"}],link:"",t:"10/03",kento:1},
+ {id:5,title:"相談会のゴール、何を数えるか",kind:"提案",by:"konishi",parts:[],posts:[{by:"konishi",lab:"ちょっと聞きたい",text:"来訪者数より「後日の対応につながった件数」を主にしたい。どう思いますか",nr:false,tm:"9:15"},{by:"hakku",lab:"ちょっと聞きたい",text:"賛成。あと「2分野以上が関わった相談」も数えたい。連携の意味が見えるので",nr:false,tm:"10:02"}],link:"",t:"10/03",kento:3},
+ {id:6,title:"告知はどの媒体を使う？",kind:"提案",by:"suzuki",parts:[],posts:[{by:"suzuki",lab:"ちょっと聞きたい",text:"薬局のLINE公式が一番届く気がします。Instagramは若い家族向けに1回だけ",nr:false,tm:"10:30"}],link:"",t:"10/03",kento:9});
+$("#phaseBtn").onclick=()=>{phase=phase==="before"?"after":"before";renderAll();toast(phase==="after"?"開催後の見え方（実績が入る）":"開催前の見え方")};
+$$("[data-go]").forEach(b=>b.onclick=()=>goSub(b.dataset.go));
+$$("[data-back]").forEach(b=>b.onclick=()=>goSub("home"));
+function goSub(s){$$(".screen").forEach(x=>x.hidden=x.id!=="sc-"+s);window.scrollTo({top:0})}
+$("#goProposal").onclick=()=>{$$(".tab")[4].click();$("#newThread").hidden=false;$$("#thKind .chip").forEach(c=>c.classList.toggle("on",c.dataset.v==="提案"));$("#thPartField").hidden=true;$("#thTitle").focus()};
+let kentoFilter="open", taskFilter="open";
+$("#kentoFilter").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;$$("#kentoFilter .chip").forEach(c=>c.classList.toggle("on",c===b));kentoFilter=b.dataset.v;renderKento()};
+$("#taskFilter").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;$$("#taskFilter .chip").forEach(c=>c.classList.toggle("on",c===b));taskFilter=b.dataset.v;renderTasks()};
+$("#newTaskOwner").innerHTML=MEMBERS.map(m=>`<option value="${m.id}">${m.n}</option>`).join("");
+$("#addTask").onclick=()=>{const t=$("#newTask").value.trim();if(!t){toast("やることを入れる");return}tasks.push({id:tasks.length+1,t,o:$("#newTaskOwner").value,due:"11/08",done:0});$("#newTask").value="";log.push(`やること追加「${t}」（${name($("#newTaskOwner").value)}）`);renderAll();toast("追加した")};
+const KST=["未着手","検討中","決定","済"];
+function kentoRow(k){return `<div class="kento"><div class="pr p-${k.p}">${k.p}</div><div style="flex:1;min-width:0"><div style="font-size:14px;line-height:1.45">${k.t}</div><div class="row meta" style="margin-top:4px;gap:6px"><button class="pill k-${k.st}" data-kst="${k.id}">${k.st}</button><span>担当 ${name(k.o)}</span><span>期限 ${k.due}</span>${k.th?`<button class="btn sm" data-kth="${k.th}">トーク</button>`:`<button class="btn sm" data-knew="${k.id}">トークを立てる</button>`}${k.st==="決定"?`<button class="btn sm" data-ktask="${k.id}">タスクにする</button>`:""}</div></div></div>`}
+function bindKento(root){
+  root.querySelectorAll("[data-kst]").forEach(b=>b.onclick=()=>{const k=KENTO.find(x=>x.id==b.dataset.kst);k.st=KST[(KST.indexOf(k.st)+1)%KST.length];if(k.st==="決定")log.push(`決定：${k.t.slice(0,18)}…（${name(viewer)}）`);renderAll();toast(k.st)});
+  root.querySelectorAll("[data-kth]").forEach(b=>b.onclick=()=>{$$(".tab")[4].click();openRoom(+b.dataset.kth)});
+  root.querySelectorAll("[data-knew]").forEach(b=>b.onclick=()=>{const k=KENTO.find(x=>x.id==b.dataset.knew);const t={id:threads.length+1,title:k.t.slice(0,28),kind:"提案",by:viewer,parts:[],posts:[],link:"",t:"10/03",kento:k.id};threads.unshift(t);k.th=t.id;$$(".tab")[4].click();openRoom(t.id)});
+  root.querySelectorAll("[data-ktask]").forEach(b=>b.onclick=()=>{const k=KENTO.find(x=>x.id==b.dataset.ktask);tasks.push({id:tasks.length+1,t:"（決定）"+k.t.slice(0,24),o:k.o,due:k.due,done:0,from:k.id});k.st="済";log.push(`タスク化：${k.t.slice(0,18)}…→ 担当 ${name(k.o)}`);renderAll();toast(`やることに入れた（担当 ${name(k.o)}）`)});
+}
+function renderKento(){
+  const list=KENTO.filter(k=>kentoFilter==="all"||!["済"].includes(k.st));
+  let html="",g="";list.forEach(k=>{if(k.g!==g){g=k.g;html+=`<div class="sec">${g}</div>`}html+=kentoRow(k)});
+  $("#kentoList").innerHTML=`<div class="list">${html||'<div class="meta">未決はない</div>'}</div>`;bindKento($("#kentoList"));
+}
+function renderTasks(){
+  let list=tasks;if(taskFilter==="open")list=list.filter(t=>!t.done&&!t.memo);if(taskFilter==="mine")list=list.filter(t=>t.o===viewer);if(taskFilter==="memo")list=list.filter(t=>t.memo&&!t.done);
+  $("#taskList").innerHTML=list.length?list.map(t=>t.memo?`<div class="task" style="border-left:4px solid var(--warn);padding-left:8px"><div style="flex:1;min-width:0"><div class="tt" style="font-size:14px">${t.t}</div><div class="meta">メモ・${t.src}・担当と期限が未設定</div><div class="row" style="margin-top:6px;gap:6px"><select data-mo="${t.id}" style="width:auto"><option value="">担当を選ぶ</option>${MEMBERS.filter(m=>m.role!=="受付担当").map(m=>`<option value="${m.id}">${m.n}</option>`).join("")}</select><select data-md="${t.id}" style="width:auto"><option value="">期限</option><option>10/10</option><option>10/17</option><option>11/08</option><option>11/14</option></select><button class="btn sm" data-mskip="${t.id}">見送り</button></div></div></div>`:`<div class="task${t.done?" done":""}"><div class="cb" data-td="${t.id}">${t.done?"✓":""}</div><div style="flex:1;min-width:0"><div class="tt" style="font-size:14px">${t.t}</div><div class="meta">${name(t.o)}・期限 ${t.due}${t.from?"・決めること #"+t.from+" から":""}${t.src?"・"+t.src+" から":""}</div></div></div>`).join(""):`<div class="meta">なし</div>`;
+  const fin=t=>{if(t.o&&t.due){t.memo=0;log.push(`メモを整理「${t.t.slice(0,16)}…」→ 担当 ${name(t.o)}・期限 ${t.due}`);renderAll();toast(`やることにした（${name(t.o)}・${t.due}）`)}};
+  $$("#taskList [data-mo]").forEach(el=>el.onchange=()=>{const t=tasks.find(x=>x.id==el.dataset.mo);t.o=el.value||null;fin(t)});
+  $$("#taskList [data-md]").forEach(el=>el.onchange=()=>{const t=tasks.find(x=>x.id==el.dataset.md);t.due=el.value;fin(t)});
+  $$("#taskList [data-mskip]").forEach(b=>b.onclick=()=>{const t=tasks.find(x=>x.id==b.dataset.mskip);t.done=1;t.memo=0;t.skip=1;renderAll();toast("見送りにした（残る）")});
+  $$("#taskList [data-td]").forEach(b=>b.onclick=()=>{const t=tasks.find(x=>x.id==b.dataset.td);t.done=t.done?0:1;if(t.done)log.push(`完了「${t.t}」（${name(t.o)}）`);renderAll()});
+}
+const ACK_MEMBERS=MEMBERS.filter(m=>m.role!=="受付担当").map(m=>m.id);
+function renderRoad(after){
+  const rate=g=>{const ks=KENTO.filter(k=>k.g.startsWith(g));return ks.filter(k=>["決定","済"].includes(k.st)).length/ks.length};
+  const td=tasks.filter(t=>t.done&&!t.memo).length, tt=tasks.filter(t=>!t.memo).length;
+  const seg=(label,r,cls,extra)=>`<div class="seg ${cls||""}${r>=1?" done":""}" ${extra||""}><div class="fill${r<1&&cls==="now"?" warn":""}" style="width:${Math.round(r*100)}%"></div><div class="cap">${label}</div></div>`;
+  // 長期：1年の道のり
+  const longSegs=[["初回 11月",after?1:0.4,after?"":"now"],["2回目 2月",0,""],["町内会でも",0,""],["常設の連携へ",0,""]];
+  // 中期：開催までの4つの節目（検討事項の決定率）
+  const midSegs=[["A 骨格",rate("A"),after?"":"now"],["B 告知",rate("B"),""],["C 当日準備",rate("C"),""],["D 事後",rate("D"),""]];
+  // 短期：今週（期限10/10までのやること）
+  const week=tasks.filter(t=>!t.memo&&t.due&&t.due<="10/10");const wd=week.filter(t=>t.done).length;
+  $("#road").innerHTML=`
+   <div class="rr"><div class="lb">長期<small>1年</small></div><div class="track">${longSegs.map(s=>seg(s[0],s[1],s[2],'data-go="goal"')).join("")}</div></div>
+   <div class="rr"><div class="lb">中期<small>11/15まで</small></div><div class="track">${midSegs.map(s=>seg(s[0],s[1],s[2],'data-go="kento"')).join("")}</div></div>
+   <div class="rr"><div class="lb">短期<small>今週</small></div><div class="track">${seg(`やること ${wd}/${week.length}`,week.length?wd/week.length:0,"now",'data-go="tasks"')}</div></div>
+   <div class="meta">塗りは「決めること」の決定率と「やること」の完了率から自動。赤枠が今いる節目。帯を押すと中へ</div>`;
+  $$("#road [data-go]").forEach(el=>el.onclick=()=>goSub(el.dataset.go));
+}
+function decCard(d){const t=threads.find(x=>x.id===d.th);const k=t&&t.kento?KENTO.find(x=>x.id===t.kento):null;d.ack=d.ack||[d.by];const mine=d.ack.includes(viewer);const un=ACK_MEMBERS.filter(m=>!d.ack.includes(m));return `<div class="decision"><b>決定</b> ${d.text}<div class="row meta" style="margin-top:4px;gap:6px"><span>${d.t}・${name(d.by)}</span>${k?`<span>決めること #${k.id}</span>`:""}${t?`<span>${t.kind==="限定"?"限定トーク（経緯は参加者のみ）":t.kind==="提案"?"提案から":"公開トーク"}</span><button class="btn sm" data-room="${t.id}">経緯</button>`:""}</div><div class="row" style="margin-top:6px;gap:8px"><button class="btn sm${mine?" primary":""}" data-ack="${decisions.indexOf(d)}">${mine?"✓ 確認済み":"確認しました"}</button><span class="meta">確認 ${d.ack.length}/${ACK_MEMBERS.length}${un.length?"・未確認：<span style=\"color:var(--warn)\">"+un.map(name).join("・")+"</span>":"・全員確認"}</span></div></div>`}
+function renderDecisions(){
+  $("#decCount").textContent=decisions.length;
+  $("#decTop").innerHTML=decisions.length?decisions.slice(0,3).map(decCard).join(""):`<div class="meta">まだ決まったことはない</div>`;
+  $("#decAll").innerHTML=decisions.length?decisions.map(decCard).join(""):`<div class="meta">まだ決まったことはない</div>`;
+  const open=KENTO.filter(k=>k.p==="高"&&!["決定","済"].includes(k.st));
+  $("#decOpen").innerHTML=open.map(kentoRow).join("")||`<div class="meta">優先高はすべて決定</div>`;bindKento($("#decOpen"));
+  $$("#decTop [data-ack],#decAll [data-ack]").forEach(b=>b.onclick=()=>{const d=decisions[b.dataset.ack];if(!ACK_MEMBERS.includes(viewer)){toast("受付担当は確認の対象外");return}if(d.ack.includes(viewer)){toast("確認済み");return}d.ack.push(viewer);renderAll();if(room)renderRoom();toast("確認しました（"+d.ack.length+"/"+ACK_MEMBERS.length+"）")});
+  $$("#decTop [data-room],#decAll [data-room]").forEach(b=>b.onclick=()=>{const t=threads.find(x=>x.id==b.dataset.room);$$(".tab")[4].click();openRoom(t.id)});
+}
+function renderGoal(){
+  const after=phase==="after";
+  $("#goalTable").innerHTML=`<div class="goalrow h"><span>指標</span><span class="v">目標</span><span class="v">実績</span><span class="ach">達成</span></div>`+GOALS.map(x=>{const a=after?x.a():null;const r=a==null?"":(a>=x.g?`<span class="ok">達成</span>`:`<span class="ng">${Math.round(a/x.g*100)}%</span>`);return `<div class="goalrow"><span>${x.k}${x.note?`<div class="meta">${x.note}</div>`:""}</span><span class="v">${x.g}${x.unit}</span><span class="v">${a==null?"－":a+x.unit}</span><span class="ach">${r}</span></div>`}).join("")+`<p class="meta" style="margin-top:8px">専門職ごとの売上順位や紹介件数の比較は出さない</p>`;
+  const od=cases.filter(x=>!["完了","見送り"].includes(x.st)&&daysLate(x.due)>0);
+  $("#overdue").innerHTML=after&&od.length?od.map(x=>`<div class="card over"><div class="row"><span class="id">${x.v}</span><span class="pill s-${x.st}">${x.st}</span><span class="spacer"></span><span class="meta" style="color:var(--crit)">${daysLate(x.due)}日超過</span></div><div>${x.f}・担当 ${name(x.owner)}・${x.note}</div></div>`).join(""):`<div class="meta">${after?"なし":"開催後に表示"}</div>`;
+}
+function renderHome(){
+  const after=phase==="after";
+  $("#heroCard").classList.toggle("after",after);
+  $("#daysLeft").textContent=after?"済":"43";$("#daysLeft").nextElementSibling.textContent=after?"":"日";
+  $("#eventDate").textContent=after?"11/15（日）開催済み・フォロー中":"開催日 11/15（日）10:00〜15:00（仮）";
+  const td=tasks.filter(t=>t.done&&!t.memo).length, kd=KENTO.filter(k=>["決定","済"].includes(k.st)).length, hi=KENTO.filter(k=>k.p==="高"&&!["決定","済"].includes(k.st)).length;
+  const ttl=tasks.filter(t=>!t.memo).length;$("#taskBar").style.width=Math.round(td/ttl*100)+"%";
+  $("#progText").innerHTML=`<span>やること ${td}/${ttl} 完了</span><span class="spacer"></span><span>決めること ${kd}/${KENTO.length} 決定</span><span class="spacer"></span><span style="color:${hi?"var(--crit)":"var(--accent-fg)"}">優先高の未決 ${hi}件</span>`;
+  renderDecisions();
+  renderRoad(after);
+  const kLeft=KENTO.filter(k=>!["決定","済"].includes(k.st)).length;
+  $("#kentoLeft").textContent=kLeft;$("#taskLeft").textContent=tasks.filter(t=>!t.done&&!t.memo).length;
+  $(".bigbtn.warn").classList.toggle("zero",hi===0);
+  $("#goalMini").textContent=after?`${GOALS[3].a()}/${GOALS[3].g}`:`${GOALS[3].g}件`;
+  $("#goalMini").nextElementSibling.textContent=after?"案件化 実績/目標":"ゴール（仮）案件化";
+  const memos=tasks.filter(t=>t.memo&&!t.done);$("#memoLine").hidden=!memos.length;$("#memoLine").innerHTML=`<div style="flex:1;min-width:0;text-align:left">未整理のメモ <b style="color:var(--warn)">${memos.length}件</b><div class="meta">LINEで@して書かれたもの。担当と期限を付ける</div></div><span class="btn sm">開く</span>`;$("#memoLine").onclick=()=>{taskFilter="memo";$$("#taskFilter .chip").forEach(c=>c.classList.toggle("on",c.dataset.v==="memo"));goSub("tasks");renderTasks()};
+  const mineOpen=tasks.filter(t=>t.o===viewer&&!t.done), mk=KENTO.filter(k=>k.o===viewer&&!["決定","済"].includes(k.st)).sort((a,b)=>({高:0,中:1,低:2})[a.p]-({高:0,中:1,低:2})[b.p]);
+  const first=mineOpen[0], firstK=mk[0];
+  const unack=decisions.filter(d=>ACK_MEMBERS.includes(viewer)&&!(d.ack||[d.by]).includes(viewer));
+  $("#mineNext").innerHTML=(unack.length?`<div class="mine late"><div style="flex:1;min-width:0">未確認の決定が ${unack.length}件<div class="meta">「確認しました」を押すだけ</div></div><button class="btn sm" data-go="decisions">開く</button></div>`:"")+(first?`<div class="mine"><div class="cb" data-td="${first.id}"></div><div style="flex:1;min-width:0">${first.t}<div class="meta">やること・期限 ${first.due}${mineOpen.length>1?`・ほか ${mineOpen.length-1}件`:""}</div></div></div>`:"")+(firstK?`<div class="mine${firstK.p==="高"?" late":""}"><div class="pr p-${firstK.p}" style="width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex:none">${firstK.p}</div><div style="flex:1;min-width:0">${firstK.t}<div class="meta">決めること・期限 ${firstK.due}${mk.length>1?`・ほか ${mk.length-1}件`:""}</div></div><button class="btn sm" data-go="kento">開く</button></div>`:"")||`<div class="meta">あなたの残りはありません</div>`;
+  $$("#mineNext [data-td]").forEach(b=>b.onclick=()=>{const t=tasks.find(x=>x.id==b.dataset.td);t.done=1;log.push(`完了「${t.t}」（${name(t.o)}）`);renderAll();toast("完了にした")});
+  $$("#mineNext [data-go]").forEach(b=>b.onclick=()=>goSub(b.dataset.go));
+  const props=threads.filter(t=>t.kind==="提案").slice(0,3);
+  $("#proposals").innerHTML=props.map(t=>`<button class="talk" data-room="${t.id}" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px"><div class="av">案</div><div style="flex:1;min-width:0"><div class="t"><span class="tt">${t.title}</span></div><div class="last">${t.posts.length}件の意見・${name(t.by)}${t.kento?"・決めること #"+t.kento:""}</div></div></button>`).join("");
+  $$("#proposals [data-room]").forEach(b=>b.onclick=()=>{$$(".tab")[4].click();openRoom(+b.dataset.room)});
+  const lines=[`【今日の動き ${after?"11/15":"10/03"}】`,`開催まで ${after?"済":"43日"}・やること ${td}/${tasks.length}・優先高の未決 ${hi}件`,``,`▶決まったこと`,...decisions.map(d=>` ・${d.text}（${name(d.by)}）`),``,`▶提案・トーク`,...threads.filter(t=>t.t===(after?"11/15":"10/03")).map(t=>` ・${t.kind==="限定"?"[限定] ":t.kind==="提案"?"[提案] ":""}${t.title}`),``,`▶動き`,...(log.length?log.map(l=>` ・${l}`):[" ・なし"])];
+  $("#daily").textContent=lines.join("\n");
+  renderGoal();
+}
+$("#copyDaily").onclick=()=>{const t=$("#daily").textContent;navigator.clipboard?.writeText(t).then(()=>toast("コピーした。LINEに貼る")).catch(()=>{const r=document.createRange();r.selectNodeContents($("#daily"));getSelection().removeAllRanges();getSelection().addRange(r);toast("選択した。長押しでコピー")})};
+
+/* 受付 */
+chips($("#whoChips"),WHO,false,["ご家族"]);chips($("#fieldChips"),FIELDS,true,[]);
+$("#howChips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;$$("#howChips .chip").forEach(c=>c.classList.toggle("on",c===b));$("#qrField").hidden=b.dataset.v!=="QR"};
+$("#addVisitor").onclick=()=>{
+  const f=picked($("#fieldChips")); if(!f.length){toast("相談したいことを1つ選ぶ");return}
+  seq++;const v={id:`V2611-${String(seq).padStart(3,"0")}`,how:picked($("#howChips"))[0],who:picked($("#whoChips"))[0],f,t:"10:4"+(seq%10),no:seq};
+  visitors.push(v);$$("#fieldChips .chip").forEach(c=>c.classList.remove("on"));renderAll();toast(`${v.id} 番号札 ${v.no}`)};
+$("#callNext").onclick=()=>{calling=Math.min(calling+1,visitors.length);renderUke()};
+$("#qrSubmit").onclick=()=>{if(!$("#agree").checked){$("#qrResult").textContent="同意のチェックが必要";return}qrSeq++;$("#qrResult").textContent=`仮番号 Q-${String(qrSeq).padStart(3,"0")}。当日、受付でこの画面を見せてください`};
+function renderUke(){
+  $("#queue").innerHTML=visitors.map(v=>`<span class="num${v.no===calling?" now":""}">${v.no}</span>`).join("");
+  $("#nowCalling").textContent=calling?`${calling}番の方、ブースへ`:"まだ呼んでいない";
+  $("#visitors").innerHTML=[...visitors].reverse().map(v=>`<div class="card"><div class="row"><span class="id">${v.id}</span><span class="pill s-相談中">${v.how}</span><span class="meta">${v.t}</span><span class="spacer"></span><span class="meta">番号札 ${v.no}</span></div><div>${v.who}・${v.f.join("、")}</div></div>`).join("");
+  $("#recVisitor").innerHTML=visitors.map(v=>`<option value="${v.id}">${v.id}（番号札 ${v.no}・${v.who}）</option>`).join("");
+}
+
+/* 相談記録 */
+chips($("#recFields"),FIELDS,true,[]);
+chips($("#recMembers"),MEMBERS.filter(m=>m.role!=="受付担当").map(m=>m.n),true,[]);
+$("#addRec").onclick=()=>{
+  const text=$("#recText").value.trim()||$("#recText").placeholder, f=picked($("#recFields")); if(!f.length){toast("分野を選ぶ");return}
+  const w=picked($("#recMembers")).map(n=>MEMBERS.find(m=>m.n===n).id).filter(id=>id!==viewer);
+  const r={v:$("#recVisitor").value,f,text,by:viewer,with:w,next:$("#recNext").value||$("#recNext").placeholder,caseId:null};
+  if($("#recCase").checked){const id=cases.length+1;cases.push({id,v:r.v,f:f[0],owner:viewer,st:"相談中",due:"2026-11-29",note:r.next});r.caseId=id;log.push(`${r.v} を案件化（担当 ${name(viewer)}）`)}
+  records.push(r);$("#recText").value="";$("#recNext").value="";$$("#recFields .chip,#recMembers .chip").forEach(c=>c.classList.remove("on"));renderAll();toast(r.caseId?"記録して案件にした":"記録した")};
+function renderRec(){
+  $("#records").innerHTML=[...records].reverse().map(r=>`<div class="card"><div class="row"><span class="id">${r.v}</span>${r.f.map(x=>`<span class="pill s-相談中">${x}</span>`).join("")}<span class="spacer"></span>${r.caseId?`<span class="pill s-受注">案件 #${r.caseId}</span>`:""}</div><div style="margin:4px 0">${r.text}</div><div class="meta">対応 ${name(r.by)}${r.with.length?"＋"+r.with.map(name).join("・"):""}｜次の一手：${r.next}</div><div class="row" style="margin-top:6px"><button class="btn sm" data-th="${r.v}">このIDでスレッドを立てる</button></div></div>`).join("");
+  $$("#records [data-th]").forEach(b=>b.onclick=()=>{$("#thTitle").value=`${b.dataset.th} の件、`;$$(".tab")[4].click();$("#thTitle").focus()});
+}
+
+/* 案件 */
+let caseFilter="all";
+$("#caseFilter").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;$$("#caseFilter .chip").forEach(c=>c.classList.toggle("on",c===b));caseFilter=b.dataset.v;renderCases()};
+function renderCases(){
+  let list=cases; if(caseFilter==="mine")list=list.filter(x=>x.owner===viewer); if(caseFilter==="over")list=list.filter(x=>!["完了","見送り"].includes(x.st)&&daysLate(x.due)>0);
+  const m=me(); const can=x=>m.role==="統括"||x.owner===viewer;
+  $("#cases").innerHTML=list.length?list.map(x=>{const late=!["完了","見送り"].includes(x.st)&&daysLate(x.due)>0;return `<div class="card${late?" over":""}"><div class="row"><span class="id">#${x.id} ${x.v}</span><button class="pill s-${x.st}" style="border:0;cursor:${can(x)?"pointer":"default"}" data-adv="${x.id}" ${can(x)?"":"disabled"}>${x.st}${can(x)&&!["完了","見送り"].includes(x.st)?" ›":""}</button><span class="spacer"></span><span class="meta" style="${late?"color:var(--crit)":""}">期限 ${x.due.slice(5).replace("-","/")}${late?"（超過）":""}</span></div><div>${x.f}・担当 ${name(x.owner)}</div><div class="meta">${x.note}</div>${can(x)&&!["完了","見送り"].includes(x.st)?`<div class="row" style="margin-top:6px"><button class="btn sm" data-skip="${x.id}">見送る</button><button class="btn sm" data-due="${x.id}">期限を2週間後に</button></div>`:`<div class="meta" style="margin-top:4px">${can(x)?"":"閲覧のみ（担当者と統括が更新）"}</div>`}</div>`}).join(""):`<div class="meta">この条件の案件はない</div>`;
+  $$("#cases [data-adv]").forEach(b=>b.onclick=()=>{const x=cases.find(c=>c.id==b.dataset.adv);const i=STATUS.indexOf(x.st);if(i<0||i>=STATUS.length-1)return;x.st=STATUS[i+1];log.push(`#${x.id} ${x.v} を「${x.st}」に（${name(viewer)}）`);renderAll();toast(`${x.st} にした`)});
+  $$("#cases [data-skip]").forEach(b=>b.onclick=()=>{const x=cases.find(c=>c.id==b.dataset.skip);x.st="見送り";log.push(`#${x.id} ${x.v} を見送り（${name(viewer)}）`);renderAll();toast("見送りにした。行は残る")});
+  $$("#cases [data-due]").forEach(b=>b.onclick=()=>{const x=cases.find(c=>c.id==b.dataset.due);x.due="2026-11-29";renderAll();toast("期限を更新した")});
+}
+
+/* トーク（スレッド） */
+let room=null, readMark={};
+threads.forEach(t=>{t.posts.forEach((p,i)=>{p.tm=p.tm||["10:12","10:40","11:05","11:30"][i%4]})});
+chips($("#thParts"),MEMBERS.filter(m=>m.role!=="受付担当").map(m=>m.n),true,[]);
+$("#newThreadBtn").onclick=()=>{$("#newThread").hidden=false;$("#thTitle").focus()};
+$("#cancelThread").onclick=()=>{$("#newThread").hidden=true};
+$("#thKind").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;$$("#thKind .chip").forEach(c=>c.classList.toggle("on",c===b));$("#thPartField").hidden=b.dataset.v!=="限定"};
+$("#thLabel").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;if(b.id==="thNoReply"){b.classList.toggle("on");return}$$("#thLabel .chip:not(#thNoReply)").forEach(c=>c.classList.toggle("on",c===b))};
+$("#thNoReply").classList.add("nr");
+$("#addThread").onclick=()=>{
+  const title=$("#thTitle").value.trim();if(!title){toast("件名を入れる");return}
+  const kind=picked($("#thKind"))[0];let parts=[];if(kind==="限定"){parts=picked($("#thParts")).map(n=>MEMBERS.find(m=>m.n===n).id);if(!parts.includes(viewer))parts.unshift(viewer);if(parts.length<2){toast("限定は相手を1人以上選ぶ");return}}
+  const t={id:threads.length+1,title,kind,by:viewer,parts,posts:[],link:(title.match(/V\d{4}-\d{3}/)||[""])[0],t:"11/15"};
+  threads.unshift(t);$("#thTitle").value="";$("#newThread").hidden=true;renderAll();openRoom(t.id);toast(kind==="限定"?"限定で作った。件名は全員に見える":"作った")};
+function canSee(t){return t.kind!=="限定"||t.parts.includes(viewer)}
+function openRoom(id){room=id;document.body.classList.add("inroom");$("#viewer2").value=viewer;readMark[viewer+":"+id]=threads.find(t=>t.id===id).posts.length;$$(".screen").forEach(s=>s.hidden=s.id!=="sc-room");$(".tabs").hidden=true;$("#roomMenu").hidden=true;renderRoom();window.scrollTo({top:document.body.scrollHeight})}
+function closeRoom(){room=null;document.body.classList.remove("inroom");$(".tabs").hidden=false;$$(".screen").forEach(s=>s.hidden=s.id!=="sc-thread");renderThreads();window.scrollTo({top:0})}
+$("#backRoom").onclick=closeRoom;
+$("#roomMenuBtn").onclick=()=>{$("#roomMenu").hidden=!$("#roomMenu").hidden};
+$("#sendMsg").onclick=()=>{
+  const t=threads.find(x=>x.id===room);const text=$("#thBody").value.trim();if(!text){toast("メッセージを入れる");return}
+  t.posts.push({by:viewer,lab:picked($("#thLabel")).find(v=>v!=="返信不要")||"ちょっと聞きたい",text,nr:$("#thNoReply").classList.contains("on"),tm:"11:4"+(t.posts.length%10)});
+  t.t="11/15";$("#thBody").value="";$("#thNoReply").classList.remove("on");readMark[viewer+":"+room]=t.posts.length;renderRoom();window.scrollTo({top:document.body.scrollHeight})};
+$("#thBody").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#sendMsg").click()}});
+function renderRoom(){
+  const t=threads.find(x=>x.id===room);if(!t)return;
+  $("#roomTitle").textContent=t.title;
+  $("#roomMeta").textContent=(t.kind==="限定"?"限定・"+t.parts.map(name).join("・"):t.kind==="提案"?"提案・全員"+(t.kento?"・決めること #"+t.kento:""):"公開・全員")+(t.link?"・"+t.link:"");
+  const see=canSee(t);
+  $("#composer").hidden=!see;
+  $("#roomMenu").innerHTML=see?`${t.kind==="限定"?`<button class="btn" data-open="${t.id}">公開に切り替える（今までの本文も全員に見える）</button><button class="btn" data-add="${t.id}">参加者を追加</button>`:""}${t.kento?`<button class="btn" data-kdone="${t.id}">この提案を「決定」にして、決めること #${t.kento} を更新</button>`:`<button class="btn" data-link="${t.id}">紐づく相談記録を見る</button>`}`:`<button class="btn" disabled>参加者ではないため操作できない</button>`;
+  if(!see){$("#msgs").innerHTML=`<div class="lockbox"><b>このトークは限定です。</b><br>本文は参加者（${t.parts.map(name).join("・")}）だけが見られます。やり取りがあること自体は全員に見えています。ここで決まったことは決定ログに全員公開で出ます。<br><br>参加したいときは、作成者（${name(t.by)}）に声をかけてください。</div>`;return}
+  const decs=decisions.filter(d=>d.th===t.id);
+  $("#msgs").innerHTML=t.posts.map((p,i)=>{const mine=p.by===viewer;return `<div class="msg${mine?" me":""}">${mine?"":`<span class="who">${name(p.by)}</span>`}<div class="bub" data-i="${i}"><span class="lab${p.lab==="判断してほしい"?" q":""}">${p.lab}</span>${p.nr?`<span class="lab">返信不要</span>`:""}<div>${p.text}</div></div><span class="tm">${p.tm}${mine?"・既読 "+Math.min(t.posts.length,t.kind==="限定"?t.parts.length-1:4):""}</span><div class="msgact" id="act${i}" hidden><button class="btn sm" data-dec="${i}">これを決定として記録</button>${decs.some(d=>d.text===p.text)?`<span class="meta">決定ログ掲載済み</span>`:""}</div></div>`}).join("")+decs.map(d=>`<div class="msg sys"><div class="bub"><b>決定</b>${d.text}（${name(d.by)}）→ 決定ログに全員公開</div></div>`).join("")+(t.posts.length?"":`<div class="msg sys"><div class="bub">最初のメッセージを送ると始まる</div></div>`);
+  $$("#msgs .bub[data-i]").forEach(b=>b.onclick=()=>{const a=$("#act"+b.dataset.i);a.hidden=!a.hidden});
+  $$("#msgs [data-dec]").forEach(b=>b.onclick=()=>{const p=t.posts[b.dataset.dec];if(decisions.some(d=>d.th===t.id&&d.text===p.text)){toast("もう載っている");return}decisions.unshift({text:p.text,by:viewer,t:"11/15",th:t.id});renderAll();renderRoom();toast("決定ログに全員公開で載せた")});
+  $$("#roomMenu [data-open]").forEach(b=>b.onclick=()=>{t.kind="公開";t.parts=[];$("#roomMenu").hidden=true;renderAll();renderRoom();toast("公開にした")});
+  $$("#roomMenu [data-add]").forEach(b=>b.onclick=()=>{const cand=MEMBERS.filter(m=>m.role!=="受付担当"&&!t.parts.includes(m.id))[0];if(!cand){toast("全員入っている");return}t.parts.push(cand.id);$("#roomMenu").hidden=true;renderAll();renderRoom();toast(`${cand.n}を追加した`)});
+  $$("#roomMenu [data-link]").forEach(b=>b.onclick=()=>{closeRoom();$$(".tab")[2].click()});
+  $$("#roomMenu [data-kdone]").forEach(b=>b.onclick=()=>{const k=KENTO.find(x=>x.id===t.kento);const last=t.posts.at(-1);if(last&&!decisions.some(d=>d.th===t.id&&d.text===last.text))decisions.unshift({text:last.text,by:viewer,t:"10/03",th:t.id});k.st="決定";log.push(`決定：${k.t.slice(0,18)}…（${name(viewer)}）`);$("#roomMenu").hidden=true;renderAll();renderRoom();toast("決定にした。進行画面で「タスクにする」が押せる")});
+}
+function renderThreads(){
+  $("#decisions").innerHTML=decisions.map(d=>`<div class="decision"><b>決定</b> ${d.text}<div class="meta">${name(d.by)}・${d.t}・${threads.find(t=>t.id===d.th)?.kind==="限定"?"限定トークから（経緯は参加者のみ）":"公開トークから"}</div></div>`).join("");
+  $("#threads").innerHTML=threads.map(t=>{
+    const see=canSee(t), last=t.posts.at(-1), unread=see?Math.max(0,t.posts.length-(readMark[viewer+":"+t.id]??0)):0;
+    const av=t.kind==="限定"?`<div class="av lk">限</div>`:t.kind==="提案"?`<div class="av">案</div>`:`<div class="av">${t.title.slice(0,1)}</div>`;
+    const lastText=see?(last?`${name(last.by)}：${last.text}`:"まだメッセージはない"):`本文は参加者のみ（${t.parts.map(name).join("・")}）`;
+    return `<button class="talk" data-room="${t.id}">${av}<div style="flex:1;min-width:0"><div class="t"><span class="tt">${t.title}</span>${t.kind==="限定"?`<span class="pill s-提案中">限定</span>`:t.kind==="提案"?`<span class="pill s-受注">提案</span>`:""}</div><div class="last">${lastText}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="when">${t.t}</span>${unread?`<span class="badge">${unread}</span>`:""}</div></button>`}).join("");
+  $$("#threads [data-room]").forEach(b=>b.onclick=()=>openRoom(+b.dataset.room));
+}
+
+function renderAll(){const m=me();$("#role").textContent=`役割：${m.role}`;renderHome();renderKento();renderTasks();renderUke();renderRec();renderCases();renderThreads();if(room)renderRoom()}
+renderAll();
+</script>

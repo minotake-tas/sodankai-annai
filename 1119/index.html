@@ -6,16 +6,16 @@
 <meta name="robots" content="noindex, nofollow">
 <title>くらしのまるごと相談会 11月19日 ― 事前登録へ</title>
 <!--
-  チラシのQRはこのページを指しています（印刷後は変えません）。
+  旧チラシのQRの入口を維持します。新チラシのQRは相談会専用の入口を指します。
   行き先を変えるときは、下の TARGET の1行だけを直してください。
-  いまの行き先：annai.html（事前登録ページの準備ができたら、相談会アプリの /qr/<開催回の文字列> に変えます）
+  いまの行き先：相談会専用の入口（事前登録ページの準備ができたら、相談会アプリの /qr/<開催回の文字列> に変えます）
 -->
 <script>
-  var TARGET = "./annai.html";
+  var TARGET = "https://minotake-tas.github.io/minotake-soudan/";
   var q = location.search || "";
-  location.replace(TARGET + q);
+  location.replace(TARGET + q + location.hash);
 </script>
-<meta http-equiv="refresh" content="0; url=./annai.html">
+<meta http-equiv="refresh" content="0; url=https://minotake-tas.github.io/minotake-soudan/">
 <style>
   body{margin:0;font-family:"Hiragino Sans","Noto Sans JP",sans-serif;background:#fbf6e7;color:#26301f;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
   .box{max-width:420px;text-align:center}
@@ -27,7 +27,8 @@
 <div class="box">
   <h1>くらしのまるごと相談会（11月19日）</h1>
   <p>事前登録のページへ移動します。自動で切り替わらないときは、下を押してください。</p>
-  <p><a href="./annai.html">事前登録のページを開く</a></p>
+  <p><a href="https://minotake-tas.github.io/minotake-soudan/">事前登録のページを開く</a></p>
 </div>
 </body>
 </html>
+
